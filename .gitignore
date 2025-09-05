@@ -1,2 +1,6 @@
 # Intermediate files
 server.py
+
+# Other directories
+__pycache__/
+
