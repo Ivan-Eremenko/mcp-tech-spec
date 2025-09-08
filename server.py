@@ -6,7 +6,7 @@ import json
 # Create an MCP Server
 mcp = FastMCP("Creating Technical Specification Service")
 
-@mcp.tool()
+@mcp.prompt()
 def tech_spec_by_measure(
     measure: str,  # The exact name of the measure to analyze from the OLAP project (.bim file)
     olap_dir: Optional[str] = None,  # Path to the directory containing the .bim file
@@ -70,3 +70,4 @@ The .bim file is a Power BI Desktop project file that contains the data model, m
 # Run the mcp
 if __name__ == "__main__":
     mcp.run(transport="http", port=8000)
+
