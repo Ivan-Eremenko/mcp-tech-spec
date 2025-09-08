@@ -6,8 +6,8 @@ import json
 # Create an MCP Server
 mcp = FastMCP("Creating Technical Specification Service")
 
-@mcp.prompt()
-def tech_spec_by_measure(
+@mcp.tool()
+def tech_spec_by_measure_new_doc(
     measure: str,  # The exact name of the measure to analyze from the OLAP project (.bim file)
     olap_dir: Optional[str] = None,  # Path to the directory containing the .bim file
     example_tech_spec_dir: Optional[str] = None  # Path to markdown file with example template
@@ -65,6 +65,66 @@ Instructions:
 The .bim file is a Power BI Desktop project file that contains the data model, measures, and relationships. Parse this file and create human-readable documentation following the technical specification format from the example."""
     
     return prompt
+
+
+@mcp.tool()
+def tech_spec_by_measure_existing_doc(
+    measure: str,  # The exact name of the measure to analyze from the OLAP project (.bim file)
+    existing_doc_dir: str,  # Path to the existing document which contains technical specification
+    olap_dir: Optional[str] = None,  # Path to the directory containing the .bim file   
+) -> str:
+    """
+    Generate a detailed technical specification definition for a specific measure from an OLAP project and add it to an existing document.
+    
+    This tool analyzes a measure from a .bim (Business Intelligence Model) file and creates a comprehensive
+    technical specification definition in markdown format, adding it to an existing document which already contains similar technical specifications
+    for other measures. The specification includes measure definition, calculation logic, dependencies, and usage guidelines 
+    based on the format of the existing document.
+    
+    Args:
+        measure (str): The exact name of the measure to analyze from the OLAP project (.bim file).
+                      This should match the measure name as it appears in the model.
+        existing_doc_dir (str): Path to the existing document which contains technical specifications.
+        olap_dir (str, optional): Path to the directory containing the .bim file. 
+                                 If not provided, the tool will search in common locations.
+    
+    Returns:
+        str: A detailed prompt string that instructs an LLM to:
+             - Locate and analyze the specified measure in the .bim file
+             - Extract measure properties (name, expression, format, etc.)
+             - Identify dependencies and related objects
+             - Generate a comprehensive technical specification definition
+             - Format the output according to the provided existing document
+             - Add the new specification to the existing document
+    
+    Example:
+        tech_spec_by_measure_existing_doc("Total Sales", "/path/to/existing_doc.md", "/path/to/olap")
+        # Returns a prompt for analyzing "Total Sales" measure and adding its specification to existing document
+    
+    Note:
+        The .bim file is a Power BI Desktop project file that contains the data model,
+        measures, and relationships. The tool generates instructions for an LLM to parse
+        this file and create human-readable documentation.
+    """
+
+    # Set default paths if not provided
+    if not olap_dir:
+        olap_dir = "/Users/eremenkoivan/Library/CloudStorage/OneDrive-TWIGACG/agrotek/OLAP"
+    
+    # Create detailed prompt for LLM
+    prompt = f"""Create a technical specification definition in markdown format for measure: "{measure}" which is from a .bim file located in directory {olap_dir} and format it like the existing specifications in the file {existing_doc_dir}. 
+
+Instructions:
+1. Locate and analyze the specified measure "{measure}" in the .bim file
+2. Extract measure properties (name, expression, format, displayFolder, etc.)
+3. Identify dependencies and related objects
+4. Generate a comprehensive technical specification definition following the format from the existing document
+5. Add the new definition to the existing markdown file, maintaining consistency with the existing format
+
+The .bim file is a Power BI Desktop project file that contains the data model, measures, and relationships. Parse this file and create human-readable documentation following the technical specification format from the existing document."""
+    
+    return prompt
+
 
 
 # Run the mcp
