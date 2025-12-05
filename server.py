@@ -8,6 +8,28 @@ mcp = FastMCP("Creating Technical Specification Service")
 # Global store for session configurations
 session_configs: Dict[str, Dict[str, str]] = {}
 
+# Reusable self-verification prompt block
+MANDATORY_SELF_VERIFICATION = """
+
+MANDATORY SELF-VERIFICATION:
+After creating the specification, you MUST:
+1. Open file '{existing_doc_dir}' and find any existing measure
+2. Compare the created structure with the found measure section by section
+3. Fix ALL differences in formatting, headers, section order
+4. Verify that "Data Flow" section exactly matches the example from the document
+5. Only after complete structural compliance, save the file"""
+
+# Self-verification block for multiple measures
+MANDATORY_SELF_VERIFICATION_MULTIPLE = """
+
+MANDATORY SELF-VERIFICATION:
+After creating all measure specifications, you MUST:
+1. Open file '{existing_doc_dir}' and find any existing measure
+2. Compare each created structure with the found measure section by section
+3. Fix ALL differences in formatting, headers, section order for each measure
+4. Verify that "Data Flow" sections exactly match the example from the document
+5. Only after complete structural compliance for all measures, save the file"""
+
 @mcp.prompt()
 def lets_configure_session() -> str:
     res = "Let's configure the MCP Server tech-spec calling a special tool configure_session"
@@ -41,11 +63,28 @@ Instructions for measure '{measure}':
    a. Trace data from the OLAP tables used by the measure back to the source DWH views in the directory '{views_dir}'.
    b. Then, trace the data from those views back to the stored procedures in '{stored_procedures_dir}' that populate the underlying tables.
    c. Analyze the logic of the identified stored procedure(s) to understand the business logic and data transformations.
-4. Generate a comprehensive technical specification definition. Crucially, the entire output must follow the format, structure, and style of the existing document at '{existing_doc_dir}'.
-5. Include the data lineage findings (from step 3) within the generated specification, placing it in an appropriate section (like "Зависимости" or "Поток данных") that aligns with the style of '{existing_doc_dir}'.
+4. Generate a comprehensive technical specification definition. CRITICALLY IMPORTANT: the output must be IDENTICAL in structure to existing measures in '{existing_doc_dir}'. Any deviation from the structure is UNACCEPTABLE.
+5. Include the data lineage findings (from step 3) within the generated specification, placing it in an appropriate section (like "Dependencies" or "Data Flow") that aligns with the style of '{existing_doc_dir}'.
     5.1. Note: It is crucial to provide a common definition for all listed stored procedures associated with the dataflow for the '{measure}' measure.
 6. Add the new definition to the existing markdown file, maintaining consistency with the document's format.
+    6.1. After adding the new measure definition, MANDATORY execute the following structure validation:
+        a) Ensure sections follow STRICTLY this order: 1. General Information, 2. Purpose, 3. Source Data, 4. Processing Logic, 5. Filter Conditions, 6. Dependencies (with subsections 6.1-6.4)
+        b) Verify that section "6.4. Data Flow" contains ALL elements: OLAP measure → DWH Views → Fact Tables → Stored Procedures → Description of each procedure
+        c) Check formatting compliance: heading levels (###, ####), DAX code formatting in ```dax blocks, numbered lists in data flow
+        d) Compare final structure with any existing measure in the document and eliminate ALL differences in formatting and section order
 7. Important: Ignore any commented-out code within the measure's expression; it should not be included in the technical specification.
+8. CRITICALLY IMPORTANT - FINAL VALIDATION:
+   After creating the technical specification, perform step-by-step verification:
+   - Read the created measure description and compare its structure with any other measure in the document
+   - Check EVERY header, EVERY subsection, EVERY formatting element
+   - If structural differences are found, fix them IMMEDIATELY
+   - Ensure stored procedure descriptions follow exactly the same format as in other measures
+9. MANDATORY CHECKLIST before completion:
+   ✓ Headers match the format (### for main sections, #### for subsections)
+   ✓ "Data Flow" section has numbered list with 4 items
+   ✓ Stored procedure descriptions are formatted as ##### headers
+   ✓ DAX code is enclosed in ```dax blocks
+   ✓ Structure is completely identical to existing measures in the document
 """
 
 @mcp.tool()
@@ -91,16 +130,18 @@ def ts_measure_new_doc(
 {base_prompt}
 The .bim file is a Power BI Desktop project file that contains the data model, measures, and relationships. Use it, along with the provided SQL directories, as the source for the analysis to create human-readable documentation following the technical specification format from the example.
 Save the new markdown file in the same directory where the {example_tech_spec_dir} file is located."""
+
+    prompt += MANDATORY_SELF_VERIFICATION.format(existing_doc_dir=example_tech_spec_dir)
     
     return prompt
 
 @mcp.tool()
 def ts_measure_existing_doc(
     measure: str,  # The exact name of the measure to analyze from the OLAP project (.bim file)
-    existing_doc_dir: str,  # Path to the existing document which contains technical specification
+    existing_doc_dir: str,  # Path to the existing document which contains technical specifications
     session_id: str,  # A unique identifier for the user session, used to retrieve configuration
     olap_dir: Optional[str] = None,  # Path to the directory containing the .bim file   
-    replace_existing_measure: bool = True,  # Indicate does a measure should be rewrite if already exists in the existing_doc_dir
+    replace_existing_measure: bool = True,  # Indicates whether a measure should be rewritten if it already exists in the existing_doc_dir
 ) -> str:
     """
     Generate a detailed technical specification for a measure, including data lineage, and add it to an existing document.
@@ -140,6 +181,8 @@ The .bim file is a Power BI Desktop project file. Parse this file and create hum
         prompt += f"\nIf a definition for measure '{measure}' already exists in '{existing_doc_dir}', replace it with the new one. Otherwise, add the new definition."
     else:
         prompt += f"\nIf a definition for measure '{measure}' already exists in '{existing_doc_dir}', do not change it. Add the new definition only if it does not exist."
+
+    prompt += MANDATORY_SELF_VERIFICATION.format(existing_doc_dir=existing_doc_dir)
 
     return prompt
 
@@ -224,6 +267,8 @@ def ts_list_measures_existing_doc(
         final_prompt += f"\nFor each measure, if a definition already exists under the correct category, replace it. Otherwise, add the new definition."
     else:
         final_prompt += f"\nFor each measure, add the new definition only if it does not already exist under the correct category."
+
+    final_prompt += MANDATORY_SELF_VERIFICATION_MULTIPLE.format(existing_doc_dir=existing_doc_dir)
 
     return final_prompt
 
