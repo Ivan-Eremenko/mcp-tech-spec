@@ -55,6 +55,10 @@ mcp.run(transport="http", port=8000)
 
 Сервер предназначен только для генерации промптов и управления конфигурацией сессий; оркестрация выполняется пользователем через Cursor UI.
 
+## Лицензия
+
+Этот проект распространяется под лицензией Apache License 2.0. См. файл LICENSE для подробностей.
+
 ---
 
 # MCP Tech Spec Server (Cursor UI) (Eng)
@@ -113,3 +117,7 @@ If parameters are not provided:
 4. Check saved files (name and location are specified in the prompt).
 
 The server is intended only for generating prompts and managing session configurations; orchestration is performed by the user through the Cursor UI.
+
+## License
+
+This project is distributed under the Apache License 2.0. See the LICENSE file for details.
