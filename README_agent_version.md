@@ -76,7 +76,11 @@ mcp.run(transport="http", port=8000)
 
 ## Интеграция
 
-Этот MCP сервер предназначен для вызова из внешних агентов (таких как LangGraph агенты), которые оркестрируют процесс генерации документации. Агент обрабатывает:
+Этот MCP сервер предназначен для вызова из внешних агентов (таких как LangGraph агенты), которые оркестрируют процесс генерации документации.
+
+Основной репозиторий Агента, который использует этот MCP сервер в своем графе: [lc-manual-creator-agent](https://github.com/Ivan-Eremenko/lc-manual-creator-agent.git)
+
+Агент обрабатывает:
 - Управление сессиями
 - Итерацию по нескольким мерам
 - Обработку возвращённых промптов
@@ -168,7 +172,11 @@ Generated documents follow the format: `BlockName_MeasureName.md`
 
 ## Integration
 
-This MCP server is designed to be called from external agents (such as LangGraph agents) that orchestrate the documentation generation process. The agent handles:
+This MCP server is designed to be called from external agents (such as LangGraph agents) that orchestrate the documentation generation process.
+
+The main Agent repository that uses this MCP server in its graph: [lc-manual-creator-agent](https://github.com/Ivan-Eremenko/lc-manual-creator-agent.git)
+
+The agent handles:
 - Session management
 - Iterating through multiple measures
 - Processing the returned prompts
