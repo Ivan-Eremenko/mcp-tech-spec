@@ -84,6 +84,10 @@ mcp.run(transport="http", port=8000)
 
 MCP сервер фокусируется исключительно на генерации промптов для анализа и поддержании конфигураций сессий.
 
+## Лицензия
+
+Этот проект распространяется под лицензией Apache License 2.0. См. файл LICENSE для подробностей.
+
 ---
 
 # MCP Tech Spec Server (Eng)
@@ -171,3 +175,7 @@ This MCP server is designed to be called from external agents (such as LangGraph
 - File creation and management
 
 The MCP server focuses solely on generating the analysis prompts and maintaining session configurations.
+
+## License
+
+This project is distributed under the Apache License 2.0. See the LICENSE file for details.
